@@ -65,10 +65,10 @@ if __name__ == '__main__':
                                                                    vocab_size=V)
     target_train_sentences, decode_word2idx, decode_idx2word = util.sentence2idx(target_train,
                                                                                  vocab_size=V)
-    model = load_model("./test_model.h5")
-    # model = model_from_json(json.load(open("./my_model.json")))
-    # model.load_weights("./epoch_25.h5")
-    # model.compile(loss='categorical_crossentropy', optimizer='adadelta')
+    # model = load_model("./test_model.h5")
+    model = model_from_json(json.load(open("./my_model.json")))
+    model.load_weights("./epoch_5.h5")
+    model.compile(loss='categorical_crossentropy', optimizer='adadelta')
 
     en_test = "../small_parallel_enja/train.en"
     ja_test = "../small_parallel_enja/train.ja"
