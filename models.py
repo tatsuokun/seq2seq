@@ -28,8 +28,8 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
     # Encoder-Decoder
     enc_dec = concatenate([encoder, decoder], axis=-1)
 
-    main_output = LSTM(hidden_size)(enc_dec)
-    main_output = Dense(decoder_vocab_size)(main_output)
+    main_output = LSTM(hidden_size, return_sequences=True)(enc_dec)
+    main_output = TimeDistributed(Dense(decoder_vocab_size))(main_output)
     main_output = Activation('softmax', name='main_output')(main_output)
 
     model = Model(outputs=[main_output], inputs=[encoder_input, decoder_input])

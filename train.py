@@ -41,7 +41,6 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
             label = np.array([np.append(Y_batch[batch][1:], 0) for batch in range(batch_size)])
             label = np_utils.to_categorical(label, decoder_vocab_size)
             label = np.reshape(label, (batch_size, decoder_maxlen, decoder_vocab_size))
-            for j in range(decoder_max_len):
             # print("X")
             # print(X_batch[0])
             # print(X_batch[0][0])
