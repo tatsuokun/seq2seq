@@ -21,22 +21,31 @@ def test(model, source_test, target_test, encoder_maxlen, decoder_maxlen,
         Y = [sentence.strip() for sentence in f]
         s = [sentence.strip() for sentence in f2]
     # sentence_num = len(X)
-    decoded_word = "</s>"
-    encoder_input = np.array([X[0]])
-    decoded_words = np.array([de_word2idx[decoded_word]])
 
-    print('================================')
-    print('source: '+s[0])
-    print('true: '+Y[0])
 
-    for _ in range(encoder_maxlen):
-        decoder_input = pad_sequences([decoded_words], maxlen=decoder_maxlen-1, padding='post', truncating='post')
-        pred = model.predict([encoder_input, decoder_input])[0][1:]
-        decoded_idx = pred.argmax()+1
-        if decoded_idx in de_idx2word:
-            print(de_idx2word[decoded_idx], end=' ')
-            decoded_words = np.append(decoded_words, [decoded_idx])
-    print('')
+    for i in range(len(X)):
+        decoded_word = "</s>"
+        encoder_input = np.array([X[i]])
+        decoded_words = np.array([de_word2idx[decoded_word]])
+        print('================================')
+        print('source: '+s[i])
+        print('true: '+Y[i])
+        for _ in range(decoder_maxlen-1):
+            decoder_input = pad_sequences([decoded_words], maxlen=decoder_maxlen, padding='post', truncating='post')
+            if len(Y[i].split()) > _:
+                print(len(Y[i]), _)
+                decoded_words = np.append(decoded_words, de_word2idx[Y[i].split()[_]])
+                print(decoder_input)
+                print(decoded_words)
+                print([de_idx2word[idx] for idx in decoded_words])
+            # pred = model.predict([encoder_input, decoder_input])[0]
+            # decoded_idx = pred.argmax()
+            # if decoded_idx in de_idx2word:
+            #     print(de_idx2word[decoded_idx], end=' ')
+            #     decoded_words = np.append(decoded_words, [decoded_idx])
+            # else:
+            #     break
+        print('')
 
     #     for j in range(len(decoded)):
     #         if not decoded[j]:
