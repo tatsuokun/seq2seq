@@ -16,15 +16,14 @@ def test(model, source_test, target_test, encoder_maxlen, decoder_maxlen,
     encoder_maxlen = max([len(x) for x in source_train_sentences])
     # decoder_maxlen = max([len(x) for x in target_train_sentences])
 
-    X = pad_sequences(source_test_sentences, maxlen=encoder_maxlen, value=0)
+    X = pad_sequences(source_test_sentences, maxlen=encoder_maxlen, padding='post', truncating='post')
     with open(target_test, mode='r') as f, open(source_test, mode='r') as f2:
         Y = [sentence.strip() for sentence in f]
         s = [sentence.strip() for sentence in f2]
     # sentence_num = len(X)
-    decoded_word = '誰'
+    decoded_word = "私"
     encoder_input = np.array([X[0]])
     decoder_input = np.array([de_word2idx[decoded_word]])
-    print(decoder_input)
 
     print('================================')
     print('source: '+s[0])
