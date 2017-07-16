@@ -12,16 +12,16 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
     encoder_emb = Embedding(output_dim=hidden_size,
                             input_dim=encoder_vocab_size,
                             input_length=encoder_maxlen)(encoder_input)
-    encoder_emb = SpatialDropout1D(0.2)(encoder_emb)  # 0.2 is a dropping rate
+    encoder_emb = SpatialDropout1D(0.2)(encoder_emb)  # 0.2 is dropping rate
     encoder = LSTM(hidden_size)(encoder_emb)
     encoder = RepeatVector(decoder_maxlen)(encoder)
 
     # Decoder
-    decoder_input = Input(shape=(1,), name='decoder_input')  # input for the decorder is the t-1 latter
+    decoder_input = Input(shape=(1,), name='decoder_input')  # input for the decorder is t-1 latter
     decoder_emb = Embedding(decoder_vocab_size,
                             hidden_size,
                             input_length=1)(decoder_input)
-    decoder_emb = SpatialDropout1D(0.2)(decoder_emb)  # 0.2 is a dropping rate
+    decoder_emb = SpatialDropout1D(0.2)(decoder_emb)  # 0.2 is dropping rate
 
     # Encoder-Decoder
     enc_dec = concatenate([encoder, decoder_emb], axis=-2)
