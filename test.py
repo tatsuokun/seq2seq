@@ -21,20 +21,21 @@ def test(model, source_test, target_test, encoder_maxlen, decoder_maxlen,
         Y = [sentence.strip() for sentence in f]
         s = [sentence.strip() for sentence in f2]
     # sentence_num = len(X)
-    decoded_word = "私"
+    decoded_word = "</s>"
     encoder_input = np.array([X[0]])
-    decoder_input = np.array([de_word2idx[decoded_word]])
+    decoded_words = np.array([de_word2idx[decoded_word]])
 
     print('================================')
     print('source: '+s[0])
     print('true: '+Y[0])
 
     for _ in range(encoder_maxlen):
+        decoder_input = pad_sequences([decoded_words], maxlen=decoder_maxlen-1, padding='post', truncating='post')
         pred = model.predict([encoder_input, decoder_input])[0][1:]
         decoded_idx = pred.argmax()+1
         if decoded_idx in de_idx2word:
-             print(de_idx2word[decoded_idx], end=' ')
-        decoder_input = np.array([decoded_idx])
+            print(de_idx2word[decoded_idx], end=' ')
+            decoded_words = np.append(decoded_words, [decoded_idx])
     print('')
 
     #     for j in range(len(decoded)):
@@ -65,10 +66,10 @@ if __name__ == '__main__':
                                                                    vocab_size=V)
     target_train_sentences, decode_word2idx, decode_idx2word = util.sentence2idx(target_train,
                                                                                  vocab_size=V)
-    # model = load_model("./test_model.h5")
-    model = model_from_json(json.load(open("./my_model.json")))
-    model.load_weights("./epoch_5.h5")
-    model.compile(loss='categorical_crossentropy', optimizer='adadelta')
+    model = load_model("./test_model.h5")
+    # model = model_from_json(json.load(open("./my_model.json")))
+    # model.load_weights("./epoch_5.h5")
+    # model.compile(loss='categorical_crossentropy', optimizer='adadelta')
 
     en_test = "../small_parallel_enja/train.en"
     ja_test = "../small_parallel_enja/train.ja"
