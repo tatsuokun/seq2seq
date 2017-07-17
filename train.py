@@ -24,9 +24,6 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
     encoder_maxlen = max([len(x) for x in X])
     decoder_maxlen = max([len(x) for x in Y])
 
-    # X = pad_sequences(source_train_sentences, maxlen=encoder_maxlen, padding='post', truncating='post')
-    # Y = pad_sequences(target_train_sentences, maxlen=decoder_maxlen, padding='post', truncating='post')
-
     model = models.seq2seq(encoder_vocab_size, encoder_maxlen,
                            decoder_vocab_size, decoder_maxlen,
                            hidden_size, save=True)
@@ -52,6 +49,7 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
         if not _epoch % 5:
             model.save_weights('epoch_'+str(_epoch)+'.h5')
     model.save('test_model.h5')
+
 
 if __name__ == '__main__':
     batch_size = 1000
