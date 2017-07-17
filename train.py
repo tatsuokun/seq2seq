@@ -14,6 +14,7 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
     Y, target_word2idx, _ = util.sentence2idx(target_train,
                                               vocab_size=V,
                                               reverse=True)
+
     encoder_vocab_size = len(source_word2idx) + 1  # +1 == unk tag
     decoder_vocab_size = len(target_word2idx) + 1
 
