@@ -1,5 +1,5 @@
 import json
-from keras.layers import Input, Dense, concatenate, add, Activation, LSTM, Embedding, SpatialDropout1D, RepeatVector, TimeDistributed
+from keras.layers import Input, Dense, Lambda, concatenate, add, Activation, LSTM, Embedding, SpatialDropout1D, RepeatVector, TimeDistributed
 from keras.models import Model
 
 
@@ -89,8 +89,9 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
                             input_dim=encoder_vocab_size,
                             input_length=encoder_maxlen)(encoder_input)
     encoder_emb = SpatialDropout1D(0.2)(encoder_emb)  # 0.2 is dropping rate
-    encoder = LSTM(hidden_size)(encoder_emb)  # save sequences for attention
-    encoder_out = RepeatVector(decoder_maxlen)(encoder)
+    encoder = LSTM(hidden_size, return_sequences=True)(encoder_emb)  # save sequences for attention
+    encoder_last_layer = Lambda(lambda x: x[:,-1,:])(encoder)
+    encoder_out = RepeatVector(decoder_maxlen)(encoder_last_layer)
 
     decoder_input = Input(shape=(decoder_maxlen,), name='decoder_input')  
     decoder_emb = Embedding(decoder_vocab_size,
@@ -103,21 +104,19 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
     enc_dec = concatenate([encoder_out, decoder], axis=-1)
     enc_dec_hidden = LSTM(hidden_size)(enc_dec)
 
-    # attention_input = RepeatVector(decoder_maxlen)(enc_dec_hidden)
-    # attention = concatenate([encoder, attention_input], axis=-1)
-    # attention = TimeDistributed(Dense(1))(attention)
-    # attention = Activation('softmax')(attention)
-    # attention = add([encoder, attentiion])
+    attention_input = RepeatVector(encoder_maxlen)(enc_dec_hidden)
+    attention = concatenate([encoder, attention_input], axis=-1)
+    attention = TimeDistributed(Dense(1))(attention)
+    attention = Activation('softmax')(attention)
+    attention = add([encoder, attention])
 
-    # main_output = concatenate([attention, enc_hidden])
-    main_output = enc_dec_hidden
+    main_output = concatenate([attention, attention_input])
     main_output = Dense(decoder_vocab_size)(main_output)
     main_output = Activation('softmax', name='main_output')(main_output)
 
-    model = Model(outputs=[main_output], inputs=[encoder_input, decoder_input])
+    model = Model(inputs=[encoder_input, decoder_input], outputs=[main_output])
     model.compile(loss='categorical_crossentropy', optimizer='adadelta')
     model.summary()
-    quit()
 
     if save:
         with open('my_model.json', 'w') as f:
