@@ -22,7 +22,7 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
         raise TypeError(str(len(X))+'!='+str(len(Y)))
 
     encoder_maxlen = max([len(x) for x in X])
-    decoder_maxlen = max([len(x)-1 for x in Y])
+    decoder_maxlen = max([len(x) for x in Y])
 
     # X = pad_sequences(source_train_sentences, maxlen=encoder_maxlen, padding='post', truncating='post')
     # Y = pad_sequences(target_train_sentences, maxlen=decoder_maxlen, padding='post', truncating='post')
@@ -43,13 +43,10 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
             encoder_input = pad_sequences(X_batch, maxlen=encoder_maxlen, padding='post', truncating='post')
             label_pad = pad_sequences(Y_batch, maxlen=encoder_maxlen, padding='post', truncating='post')
             label = list(zip(*label_pad))[1:]
-            for j in range(decoder_maxlen):
+            for j in range(decoder_maxlen-1):
                 Y_batch_jth_sequence = [Y_batch[k][:j+1] for k in range(batch_size)]
                 decoder_input = pad_sequences(Y_batch_jth_sequence, maxlen=encoder_maxlen, padding='post', truncating='post')
                 label_categorical = np_utils.to_categorical(label[j], decoder_vocab_size)
-                print(encoder_input.shape)
-                print(decoder_input.shape)
-                print(label_categorical.shape)
                 loss += model.train_on_batch([encoder_input, decoder_input], label_categorical)
         print('epoch', _epoch, loss)
         if not _epoch % 5:
