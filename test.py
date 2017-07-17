@@ -30,6 +30,7 @@ def test(model, source_test, target_test,
         for _ in range(decoder_maxlen-1):
             decoder_input = pad_sequences([decoded_words], maxlen=decoder_maxlen, padding='post', truncating='post')
             pred = model.predict([encoder_input, decoder_input])[0]
+            pred[0] = -1 
             decoded_idx = pred.argmax()
             if decoded_idx in de_idx2word:
                 print(de_idx2word[decoded_idx], end=' ')
@@ -48,8 +49,8 @@ if __name__ == '__main__':
     target_train_sentences, decode_word2idx, decode_idx2word = util.sentence2idx(target_train,
                                                                                  vocab_size=V)
     # model = load_model("./test_model.h5")
-    model = model_from_json(json.load(open("./my_model.json")))
-    model.load_weights("./epoch_30.h5")
+    model = model_from_json(json.load(open("my_model.json")))
+    model.load_weights("epoch_10.h5")
     model.compile(loss='categorical_crossentropy', optimizer='adadelta')
 
     en_test = "../small_parallel_enja/train.en"
