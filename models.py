@@ -103,16 +103,19 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
     decoder = LSTM(hidden_size, return_sequences=True)(decoder_emb)
     decoder = TimeDistributed(Dense(hidden_size))(decoder)
 
-    attention = concatenate([encoder, decoder], axis=-1)
+    enc_dec = concatenate([encoder_out, decoder], axis=-1)
+    enc_dec_hidden = LSTM(hidden_size)(enc_dec)
+
+    attention_input = RepeatVector(encoder_maxlen)(enc_dec_hidden)
+    attention = concatenate([encoder, attention_input], axis=-1)
     attention = TimeDistributed(Dense(1))(attention)
     attention = Lambda(lambda x: activations.softmax(x, axis=1))(attention)
     attention = multiply([encoder, attention])
     attention = Lambda(lambda x: K.sum(x, axis=1))(attention)
-    attention = RepeatVector(decoder_maxlen)(attention)
 
-    enc_dec = concatenate([encoder_out, decoder, attention], axis=-1)
-    enc_dec_hidden = LSTM(hidden_size)(enc_dec)
-    main_output = Dense(decoder_vocab_size, activation='tanh')(main_output)
+    main_output = concatenate([enc_dec_hidden, attention], axis=-1)
+    main_output = Dense(hidden_size, activation='tanh')(main_output)
+    main_output = Dense(decoder_vocab_size)(main_output)
     main_output = Activation('softmax', name='main_output')(main_output)
 
     model = Model(inputs=[encoder_input, decoder_input], outputs=[main_output])
