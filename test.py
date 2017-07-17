@@ -49,7 +49,7 @@ if __name__ == '__main__':
                                                                                  vocab_size=V)
     # model = load_model("./test_model.h5")
     model = model_from_json(json.load(open("./my_model.json")))
-    model.load_weights("./epoch_5.h5")
+    model.load_weights("./epoch_30.h5")
     model.compile(loss='categorical_crossentropy', optimizer='adadelta')
 
     en_test = "../small_parallel_enja/train.en"

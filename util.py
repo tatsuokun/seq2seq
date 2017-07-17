@@ -16,7 +16,7 @@ def vocab(path, vocab_size):
 
 
 def word2idx(word_idx, sentence):
-    unk = len(word_idx)
+    unk = len(word_idx) + 1
     return [unk if word not in word_idx else word_idx[word] for word in sentence]
 
 

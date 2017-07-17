@@ -5,15 +5,18 @@ from keras.utils import np_utils
 from keras.preprocessing.sequence import pad_sequences
 
 
-def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_train):
+def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_train,
+          source_word2idx, idx_word, target_word2idx):
 
     # X: source_train_sentences
     # Y: target_train_sentences
-    X, source_word2idx, idx_word = util.sentence2idx(source_train,
-                                                     vocab_size=V)
-    Y, target_word2idx, _ = util.sentence2idx(target_train,
-                                              vocab_size=V,
-                                              reverse=True)
+    X, _, _ = util.sentence2idx(source_train,
+                                vocab_size=V,
+                                word_idx=source_word2idx)
+    Y, _, _ = util.sentence2idx(target_train,
+                                vocab_size=V,
+                                word_idx=target_word2idx,
+                                reverse=True)
 
     encoder_vocab_size = len(source_word2idx) + 1  # +1 == unk tag
     decoder_vocab_size = len(target_word2idx) + 1
@@ -25,9 +28,9 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
     encoder_maxlen = max([len(x) for x in X])
     decoder_maxlen = max([len(x) for x in Y])
 
-    model = models.seq2seq(encoder_vocab_size, encoder_maxlen,
-                           decoder_vocab_size, decoder_maxlen,
-                           hidden_size, save=True)
+    model = models.seq2seq_attention(encoder_vocab_size, encoder_maxlen,
+                                     decoder_vocab_size, decoder_maxlen,
+                                     hidden_size, save=True)
 
     print("model loaded")
     print("start training")
@@ -61,4 +64,14 @@ if __name__ == '__main__':
 
     en_train = "../small_parallel_enja/train.en"
     ja_train = "../small_parallel_enja/train.ja"
-    train(batch_size, hidden_size, epoch, V, en_train, ja_train)
+
+    en_test = "../small_parallel_enja/test.en"
+    ja_test = "../small_parallel_enja/test.ja"
+
+    _, source_word2idx, idx_word = util.sentence2idx(en_train,
+                                                     vocab_size=V)
+    _, target_word2idx, _ = util.sentence2idx(ja_train,
+                                              vocab_size=V,
+                                              reverse=True)
+
+    train(batch_size, hidden_size, epoch, V, en_test, ja_test, source_word2idx, idx_word, target_word2idx)
