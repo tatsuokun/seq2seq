@@ -19,7 +19,7 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
                                 reverse=True)
 
     encoder_vocab_size = len(source_word2idx) + 1  # +1 == unk tag
-    decoder_vocab_size = len(target_word2idx) + 1
+    decoder_vocab_size = len(target_word2idx) + 2  # +2 == unk tag + BOS tag 
 
     sentence_num = len(X)
     if len(X) != len(Y):
@@ -74,4 +74,4 @@ if __name__ == '__main__':
                                               vocab_size=V,
                                               reverse=True)
 
-    train(batch_size, hidden_size, epoch, V, en_test, ja_test, source_word2idx, idx_word, target_word2idx)
+    train(batch_size, hidden_size, epoch, V, en_train, ja_train, source_word2idx, idx_word, target_word2idx)
