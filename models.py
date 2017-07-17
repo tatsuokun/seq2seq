@@ -1,6 +1,7 @@
 import json
-from keras.layers import Input, Dense, Lambda, concatenate, add, Activation, LSTM, Embedding, SpatialDropout1D, RepeatVector, TimeDistributed
+from keras.layers import Input, Dense, Lambda, concatenate, multiply, add, Activation, LSTM, Embedding, SpatialDropout1D, RepeatVector, TimeDistributed
 from keras.models import Model
+from keras import backend as K
 
 
 def seq2seq(encoder_vocab_size, encoder_maxlen,
@@ -108,10 +109,11 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
     attention = concatenate([encoder, attention_input], axis=-1)
     attention = TimeDistributed(Dense(1))(attention)
     attention = Activation('softmax')(attention)
-    attention = add([encoder, attention])
+    attention = multiply([encoder, attention])
+    attention = Lambda(lambda x: K.sum(x, axis=1))(attention)
 
-    main_output = concatenate([attention, attention_input])
-    main_output = Dense(decoder_vocab_size)(main_output)
+    main_output = concatenate([attention, enc_dec_hidden])
+    main_output = Dense(decoder_vocab_size, activation='tanh')(main_output)
     main_output = Activation('softmax', name='main_output')(main_output)
 
     model = Model(inputs=[encoder_input, decoder_input], outputs=[main_output])
