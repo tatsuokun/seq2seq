@@ -5,7 +5,7 @@ from keras.models import load_model, model_from_json
 from keras.preprocessing.sequence import pad_sequences
 
 
-def test(model, source_test, target_test, encoder_maxlen, decoder_maxlen,
+def test(model, source_test, target_test,
          en_word2idx, de_word2idx, de_idx2word):
 
     source_test_sentences, _, _ = util.sentence2idx(source_test,
@@ -18,7 +18,6 @@ def test(model, source_test, target_test, encoder_maxlen, decoder_maxlen,
     with open(target_test, mode='r') as f, open(source_test, mode='r') as f2:
         Y = [sentence.strip() for sentence in f]
         s = [sentence.strip() for sentence in f2]
-
 
     for i in range(len(X)):
         decoded_word = "</s>"
@@ -41,8 +40,6 @@ def test(model, source_test, target_test, encoder_maxlen, decoder_maxlen,
 
 
 if __name__ == '__main__':
-    encoder_maxlen = 18
-    decoder_maxlen = 18
     V = 5000
     source_train = "../small_parallel_enja/train.en"
     target_train = "../small_parallel_enja/train.ja"
@@ -57,4 +54,4 @@ if __name__ == '__main__':
 
     en_test = "../small_parallel_enja/train.en"
     ja_test = "../small_parallel_enja/train.ja"
-    test(model, en_test, ja_test, encoder_maxlen, decoder_maxlen, encode_word2idx, decode_word2idx, decode_idx2word)
+    test(model, en_test, ja_test, encode_word2idx, decode_word2idx, decode_idx2word)
