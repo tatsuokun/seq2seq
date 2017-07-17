@@ -60,7 +60,7 @@ if __name__ == '__main__':
     embedding_dim = 100
     hidden_size = 256
     V = 5000
-    epoch = 51
+    epoch = 301
 
     en_train = "../small_parallel_enja/train.en"
     ja_train = "../small_parallel_enja/train.ja"
