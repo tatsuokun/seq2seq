@@ -20,12 +20,12 @@ def word2idx(word_idx, sentence):
     return [unk if word not in word_idx else word_idx[word] for word in sentence]
 
 
-def sentence2idx(path, vocab_size=False, word_idx=False, reverse=False):
+def sentence2idx(path, vocab_size=False, word_idx=False, train=False):
     # convert sentence words into idx using given word_idx dictionary
     if not vocab_size and word_idx:
         with open(path, mode="r") as f:
-            if reverse:
-                sentences = [["</s>"]+word2idx(word_idx, line.strip().split()) for line in f]
+            if train:
+                sentences = [["</s>"]+word2idx(word_idx, line.strip().split()+["</s>"]) for line in f]
             else:
                 sentences = [word2idx(word_idx, line.strip().split()+["</s>"]) for line in f]
         return sentences, False, False
@@ -33,7 +33,7 @@ def sentence2idx(path, vocab_size=False, word_idx=False, reverse=False):
     elif vocab_size:
         word_idx, idx_word = vocab(path, vocab_size)
         with open(path, mode="r") as f:
-            if reverse:
+            if train:
                 sentences = [["</s>"]+line.strip().split() for line in f]
             else:
                 sentences = [line.strip().split()+["</s>"] for line in f]
