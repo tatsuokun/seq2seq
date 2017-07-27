@@ -3,11 +3,12 @@ from keras.layers import Input, Dense, Lambda, concatenate, multiply, add, Activ
 from keras.models import Model
 from keras import backend as K
 from keras import activations
+from keras import optimizers
 
 
 def seq2seq(encoder_vocab_size, encoder_maxlen,
             decoder_vocab_size, decoder_maxlen,
-            hidden_size, save=False):
+            batch_size, embedding_hidden, hidden_size, save=False):
 
     '''
     Encoder
@@ -16,12 +17,13 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
         [3, 4, 500, 1]  => padding => [3, 4, 500, 1, 0, 0, 0, 0, 0, 0] <- This is the input
     '''
 
-    encoder_input = Input(shape=(encoder_maxlen,), name='encoder_input')
-    encoder_emb = Embedding(output_dim=hidden_size,
+    encoder_input = Input(shape=(encoder_maxlen,), batch_shape=(batch_size, encoder_maxlen,), name='encoder_input')
+    encoder_emb = Embedding(output_dim=embedding_hidden,
                             input_dim=encoder_vocab_size,
                             input_length=encoder_maxlen)(encoder_input)
     encoder_emb = SpatialDropout1D(0.2)(encoder_emb)  # 0.2 is dropping rate
-    encoder = LSTM(hidden_size)(encoder_emb)
+    encoder = LSTM(hidden_size,
+                   stateful=True)(encoder_emb)
     encoder = RepeatVector(decoder_maxlen)(encoder)
 
     '''
@@ -38,12 +40,14 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
                 [5000, 3, 5, 330]  => padding => [5000, 3, 5, 330, 0, 0, 0, 0 0, 0, 0, 0, 0,] <- This is the output
     '''
 
-    decoder_input = Input(shape=(decoder_maxlen,), name='decoder_input')  
+    decoder_input = Input(shape=(decoder_maxlen,), batch_shape=(batch_size, decoder_maxlen,), name='decoder_input')  
     decoder_emb = Embedding(decoder_vocab_size,
-                            hidden_size,
+                            embedding_hidden,
                             input_length=decoder_maxlen)(decoder_input)
     decoder_emb = SpatialDropout1D(0.2)(decoder_emb)  # 0.2 is dropping rate
-    decoder = LSTM(hidden_size, return_sequences=True)(decoder_emb)
+    decoder = LSTM(hidden_size,
+                   stateful=True,
+                   return_sequences=True)(decoder_emb)
     decoder = TimeDistributed(Dense(hidden_size))(decoder)
 
     '''
@@ -72,7 +76,8 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
             Output of Encoder-Decoder: [0.01, 0.01, 0.01, 0.30, ..., 0.01] <- Summation of this is 1.
     '''
     model = Model(outputs=[main_output], inputs=[encoder_input, decoder_input])
-    model.compile(loss='categorical_crossentropy', optimizer='adadelta')
+    # adam = optimizers.Adam(decay=1e-5, clipvalue=0.5)
+    model.compile(loss='categorical_crossentropy', optimizer='adagrad')
     model.summary()
 
     if save:
@@ -84,10 +89,10 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
 
 def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
                       decoder_vocab_size, decoder_maxlen,
-                      hidden_size, save=False):
+                      batch_size, embedding_hidden, hidden_size, save=False):
 
     encoder_input = Input(shape=(encoder_maxlen,), name='encoder_input')
-    encoder_emb = Embedding(output_dim=hidden_size,
+    encoder_emb = Embedding(output_dim=embedding_hidden,
                             input_dim=encoder_vocab_size,
                             input_length=encoder_maxlen)(encoder_input)
     encoder_emb = SpatialDropout1D(0.2)(encoder_emb)  # 0.2 is dropping rate
@@ -97,7 +102,7 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
 
     decoder_input = Input(shape=(decoder_maxlen,), name='decoder_input')  
     decoder_emb = Embedding(decoder_vocab_size,
-                            hidden_size,
+                            embehidden_size,
                             input_length=decoder_maxlen)(decoder_input)
     decoder_emb = SpatialDropout1D(0.2)(decoder_emb)  # 0.2 is dropping rate
     decoder = LSTM(hidden_size, return_sequences=True)(decoder_emb)
@@ -119,7 +124,8 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
     main_output = Activation('softmax', name='main_output')(main_output)
 
     model = Model(inputs=[encoder_input, decoder_input], outputs=[main_output])
-    model.compile(loss='categorical_crossentropy', optimizer='adadelta')
+    adam = optimizers.Adam(decay=1e-5, clipvalue=0.5)
+    model.compile(loss='categorical_crossentropy', optimizer=adam)
     model.summary()
 
     if save:

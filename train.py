@@ -6,7 +6,7 @@ from keras.utils import np_utils
 from keras.preprocessing.sequence import pad_sequences
 
 
-def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_train,
+def train(batch_size, embedding_dim, hidden_size, epoch, vocabulary_size, source_train, target_train,
           source_word2idx, idx_word, target_word2idx):
 
     # X: source_train_sentences
@@ -20,21 +20,21 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
                                 train=True)
 
     encoder_vocab_size = len(source_word2idx) + 1  # +1 == unk tag
-    decoder_vocab_size = len(target_word2idx) + 2  # +2 == unk tag + BOS tag 
+    decoder_vocab_size = len(target_word2idx) + 2  # +2 == unk tag + EOS tag 
 
     sentence_num = len(X)
     if len(X) != len(Y):
         raise TypeError(str(len(X))+'!='+str(len(Y)))
 
     encoder_maxlen = max([len(x) for x in X])
-    decoder_maxlen = max([len(x) for x in Y])
+    decoder_maxlen = max([len(x) for x in Y]) - 1
 
     # model = models.seq2seq_attention(encoder_vocab_size, encoder_maxlen,
     #                                  decoder_vocab_size, decoder_maxlen,
-    #                                  hidden_size, save=True)
+    #                                  batch_size, embedding_dim, hidden_size, save=True)
     model = models.seq2seq(encoder_vocab_size, encoder_maxlen,
                            decoder_vocab_size, decoder_maxlen,
-                           hidden_size, save=True)
+                           batch_size, embedding_dim, hidden_size, save=True)
 
     print("model loaded")
     print("start training")
@@ -60,11 +60,11 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
 
 
 if __name__ == '__main__':
-    batch_size = 1000
-    embedding_dim = 100
+    batch_size = 500
+    embedding_dim = 256
     hidden_size = 256
     V = 5000
-    epoch = 51
+    epoch = 31
 
     en_train = "../small_parallel_enja/train.en"
     ja_train = "../small_parallel_enja/train.ja"
@@ -74,10 +74,10 @@ if __name__ == '__main__':
 
     _, source_word2idx, source_idx2word = util.sentence2idx(en_train,
                                                             vocab_size=V)
-    _, target_word2idx, target_idx2word_ = util.sentence2idx(ja_train,
+    _, target_word2idx, target_idx2word = util.sentence2idx(ja_train,
                                                              vocab_size=V,
                                                              train=True)
 
-    train(batch_size, hidden_size, epoch, V, en_train, ja_train, source_word2idx, source_idx2word, target_word2idx)
+    train(batch_size, embedding_dim, hidden_size, epoch, V, en_train, ja_train, source_word2idx, source_idx2word, target_word2idx)
     with open('word_vocabs.pickle', mode='w') as w:
         pickle.dump([source_word2idx, source_idx2word, target_word2idx, target_idx2word], w)
