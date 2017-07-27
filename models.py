@@ -1,5 +1,5 @@
 import json
-from keras.layers import Input, Dense, Lambda, concatenate, multiply, add, Activation, LSTM, Embedding, SpatialDropout1D, RepeatVector, TimeDistributed
+from keras.layers import Input, Dense, Lambda, concatenate, multiply, add, Activation, LSTM, Embedding, SpatialDropout1D, RepeatVector, TimeDistributed, Flatten
 from keras.models import Model
 from keras import backend as K
 from keras import activations
@@ -43,8 +43,6 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
                             hidden_size,
                             input_length=decoder_maxlen)(decoder_input)
     decoder_emb = SpatialDropout1D(0.2)(decoder_emb)  # 0.2 is dropping rate
-    decoder = LSTM(hidden_size, return_sequences=True)(decoder_emb)
-    decoder = TimeDistributed(Dense(hidden_size))(decoder)
 
     '''
     Encoder-Decoder
@@ -54,9 +52,11 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
             => scale the vector to the vector whose hidden size is given vocaburaly size => softmax
     '''
 
-    enc_dec = concatenate([encoder, decoder], axis=-1)
-    main_output = LSTM(hidden_size)(enc_dec)
-    main_output = Dense(decoder_vocab_size)(main_output)
+    enc_dec = concatenate([encoder, decoder_emb], axis=-1)
+    enc_dec = LSTM(hidden_size, return_sequences=True)(enc_dec)
+    enc_dec = TimeDistributed(Dense(hidden_size))(enc_dec)
+    enc_dec = Flatten()(enc_dec)
+    main_output = Dense(decoder_vocab_size)(enc_dec)
     main_output = Activation('softmax', name='main_output')(main_output)
 
     '''
