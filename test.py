@@ -1,7 +1,8 @@
 import util
+import bleu
 import numpy as np
 import json
-from nltk.translate.bleu_score import corpus_bleu, SmoothingFunction
+from nltk.translate.bleu_score import corpus_bleu, sentence_bleu, SmoothingFunction
 from keras.models import load_model, model_from_json
 from keras.preprocessing.sequence import pad_sequences
 
@@ -20,15 +21,12 @@ def test(model, source_test, target_test, batch_size,
         Y = [sentence.strip() for sentence in f]
         s = [sentence.strip() for sentence in f2]
 
-    references = [sentence.split() for sentence in Y]
-    encoder_dummy = np.zeros([batch_size-1,encoder_maxlen])
-    decoder_dummy = np.zeros([batch_size-1,decoder_maxlen])
+    references = [[sentence.split()] for sentence in Y]
     hypotheses = []
 
     for i in range(len(X)):
         decoded_word = "</s>"
         encoder_input = np.array([X[i]])
-        _encoder_input = np.concatenate((encoder_input, encoder_dummy), axis=0)
         decoded_words = np.array([de_word2idx[decoded_word]])
         output_sentence = []
         print('================================')
@@ -38,8 +36,7 @@ def test(model, source_test, target_test, batch_size,
 
         for _ in range(decoder_maxlen-1):
             decoder_input = pad_sequences([decoded_words], maxlen=decoder_maxlen, padding='post', truncating='post')
-            _decoder_input = np.concatenate((decoder_input, decoder_dummy), axis=0)
-            pred = model.predict([_encoder_input, _decoder_input], batch_size=batch_size)[0]
+            pred = model.predict([encoder_input, decoder_input], batch_size=batch_size)[0]
             pred[0] = -1
             decoded_idx = pred.argmax()
             if de_idx2word.get(decoded_idx) == '<EOS>':
@@ -48,8 +45,11 @@ def test(model, source_test, target_test, batch_size,
             output_sentence.append(de_idx2word[decoded_idx])
             decoded_words = np.append(decoded_words, decoded_idx)
         print('')
+        print("bleu: ", sentence_bleu(references[i], output_sentence, smoothing_function=SmoothingFunction().method1)*100)
         hypotheses.append(output_sentence)
-    print(corpus_bleu(references, hypotheses, smoothing_function=SmoothingFunction().method1))
+    print(corpus_bleu(references, hypotheses, smoothing_function=SmoothingFunction().method1)*100)
+    # print(corpus_bleu(references, hypotheses)*100)
+
 
 
 if __name__ == '__main__':
@@ -63,8 +63,10 @@ if __name__ == '__main__':
                                                                                  vocab_size=V,
                                                                                  train=True)
     # model = load_model("./test_model.h5")
+    # model = model_from_json(json.load(open("models/normal/my_model.json")))
+    # model.load_weights("models/normal/epoch_0.h5")
     model = model_from_json(json.load(open("my_model.json")))
-    model.load_weights("epoch_20.h5")
+    model.load_weights("epoch_30.h5")
     model.compile(loss='categorical_crossentropy', optimizer='adagrad')
 
     en_test = "../small_parallel_enja/test.en"

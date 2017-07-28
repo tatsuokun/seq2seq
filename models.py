@@ -100,10 +100,8 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
                             hidden_size,
                             input_length=decoder_maxlen)(decoder_input)
     decoder_emb = SpatialDropout1D(0.2)(decoder_emb)  # 0.2 is dropping rate
-    decoder = LSTM(hidden_size, return_sequences=True)(decoder_emb)
-    decoder = TimeDistributed(Dense(hidden_size))(decoder)
 
-    enc_dec = concatenate([encoder_out, decoder], axis=-1)
+    enc_dec = concatenate([encoder_out, decoder_emb], axis=-1)
     enc_dec_hidden = LSTM(hidden_size)(enc_dec)
 
     attention_input = RepeatVector(encoder_maxlen)(enc_dec_hidden)
