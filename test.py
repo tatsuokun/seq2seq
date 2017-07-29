@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # model = model_from_json(json.load(open("models/normal/my_model.json")))
     # model.load_weights("models/normal/epoch_0.h5")
     model = model_from_json(json.load(open("my_model.json")))
-    model.load_weights("epoch_30.h5")
+    model.load_weights("epoch_120.h5")
     model.compile(loss='categorical_crossentropy', optimizer='adagrad')
 
     en_test = "../small_parallel_enja/test.en"
