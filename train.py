@@ -27,14 +27,14 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
         raise TypeError(str(len(X))+'!='+str(len(Y)))
 
     encoder_maxlen = max([len(x) for x in X])
-    decoder_maxlen = max([len(x) for x in Y])
+    decoder_maxlen = max([len(x) for x in Y]) - 1
 
-    # model = models.seq2seq_attention(encoder_vocab_size, encoder_maxlen,
-    #                                  decoder_vocab_size, decoder_maxlen,
-    #                                  hidden_size, save=True)
-    model = models.seq2seq(encoder_vocab_size, encoder_maxlen,
-                           decoder_vocab_size, decoder_maxlen,
-                           hidden_size, save=True)
+    model = models.seq2seq_attention(encoder_vocab_size, encoder_maxlen,
+                                     decoder_vocab_size, decoder_maxlen,
+                                     hidden_size, save=True)
+    # model = models.seq2seq(encoder_vocab_size, encoder_maxlen,
+    #                        decoder_vocab_size, decoder_maxlen,
+    #                        hidden_size, save=True)
 
     print("model loaded")
     print("start training")
@@ -54,17 +54,17 @@ def train(batch_size, hidden_size, epoch, vocabulary_size, source_train, target_
                 label_categorical = np_utils.to_categorical(label[j], decoder_vocab_size)
                 loss += model.train_on_batch([encoder_input, decoder_input], label_categorical)
         print('epoch', _epoch, loss)
-        if not _epoch % 10:
+        if not _epoch % 30:
             model.save_weights('epoch_'+str(_epoch)+'.h5')
     model.save('test_model.h5')
 
 
 if __name__ == '__main__':
-    batch_size = 1000
+    batch_size = 100
     embedding_dim = 100
     hidden_size = 256
     V = 5000
-    epoch = 51
+    epoch = 301
 
     en_train = "../small_parallel_enja/train.en"
     ja_train = "../small_parallel_enja/train.ja"
