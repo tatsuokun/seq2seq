@@ -81,18 +81,14 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
 
     return model
 
-# function for Lambda layers
+# functions for Lambda layers
 def last_layer(x):
-    get_last_layer = lambda x:x[:,-1,:]
-    return get_last_layer(x)
-
-def last_layer_output(input_shape):
-    return (input_shape[0], input_shape[2])
+    return x[:,-1,:]
 
 def sum_tensor(x):
     return K.sum(x, axis=1)
 
-def sum_tensor_output(input_shape):
+def lambda_output(input_shape):
     return (input_shape[0],input_shape[2])
 
 
@@ -106,7 +102,7 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
                             input_length=encoder_maxlen)(encoder_input)
     encoder_emb = SpatialDropout1D(0.2)(encoder_emb)  # 0.2 is dropping rate
     encoder = LSTM(hidden_size, return_sequences=True)(encoder_emb)  # save sequences for attention
-    encoder_last_layer = Lambda(last_layer, output_shape=last_layer_output)(encoder)
+    encoder_last_layer = Lambda(last_layer, output_shape=lambda_output)(encoder)
     encoder_out = RepeatVector(decoder_maxlen)(encoder_last_layer)
 
     decoder_input = Input(shape=(decoder_maxlen,), name='decoder_input')  
@@ -123,7 +119,7 @@ def seq2seq_attention(encoder_vocab_size, encoder_maxlen,
     attention = TimeDistributed(Dense(1))(attention)
     attention = Lambda(lambda x: activations.softmax(x, axis=1))(attention)
     attention = multiply([encoder, attention])
-    attention = Lambda(sum_tensor, output_shape=sum_tensor_output)(attention)
+    attention = Lambda(sum_tensor, output_shape=lambda_output)(attention)
 
     main_output = concatenate([enc_dec_hidden, attention], axis=-1)
     main_output = Dense(hidden_size, activation='tanh')(main_output)
