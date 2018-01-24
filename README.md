@@ -12,7 +12,7 @@ If you want to know more details, see models.py.
 
 ## Warning! This repository is outdated!
 
-Although some of you starred this repository, here is almost outdated.
+Although some of you starred this repository (thx!), here is almost outdated.
 And I also found mistakes in coding where is the input for decoder.
 My decoder takes input as a sentence, but correct decoder should take input as a word.
 In other word, decoder predict (w_t) given (w_t-1, hidden_t-1), not given ([w_o; w_1; ...; w_t-1], hidden_t-1) as I coded.
