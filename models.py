@@ -29,13 +29,13 @@ def seq2seq(encoder_vocab_size, encoder_maxlen,
         Input is [t-1:] word indices after padding.
         source sentence: I am Hanako
         target sentence: 私 は 花子 です 。
-            ['私', 'は', '花子', 'です', '。'] => conver word to index => [3, 5,330, 4, 1] 
+            ['私', 'は', '花子', 'です', '。'] => conver word to index => [3, 5, 330, 4, 1] 
             [3, 5, 330, 4, 1] => add a start symbol => [5000, 3, 5, 330, 4, 1]
 
-            When we predict the word 'は' given '私'
-                [5000, 3]  => padding => [5000, 3, 0, 0, 0, 0, 0, 0 0, 0, 0, 0, 0,] <- This is the output
-            When we predict the word 'です' given '私 は 花子'
-                [5000, 3, 5, 330]  => padding => [5000, 3, 5, 330, 0, 0, 0, 0 0, 0, 0, 0, 0,] <- This is the output
+            When we predict the word 'は' given '私', the input for decoder should be 
+                [3] which is the index corresponding the word 'は'.
+            When we predict the word 'です' given '花子', the input for decoder should be
+                [330] which is the index corresponding the given word.
     '''
 
     decoder_input = Input(shape=(decoder_maxlen,), name='decoder_input')  
